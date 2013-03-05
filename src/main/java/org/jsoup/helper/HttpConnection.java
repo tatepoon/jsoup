@@ -34,12 +34,31 @@ public class HttpConnection implements Connection {
         return con;
     }
 
+    public static Connection connect(String url, String charset) {
+    	Connection con = new HttpConnection(charset);
+        con.url(url);
+        return con;
+	}
+    
+    public static Connection connect(URL url, String charset) {
+        Connection con = new HttpConnection(charset);
+        con.url(url);
+        return con;
+    }
+    
     private Connection.Request req;
     private Connection.Response res;
+    private String charset = null;
 
 	private HttpConnection() {
         req = new Request();
         res = new Response();
+    }
+	
+	private HttpConnection(String charset) {
+        req = new Request();
+        res = new Response();
+        this.charset = charset;
     }
 
     public Connection url(URL url) {
@@ -159,13 +178,21 @@ public class HttpConnection implements Connection {
     public Document get() throws IOException {
         req.method(Method.GET);
         execute();
-        return res.parse();
+        if (charset == null) {
+        	return res.parse();
+        } else {
+        	return res.parse(charset);
+        }
     }
 
     public Document post() throws IOException {
         req.method(Method.POST);
         execute();
-        return res.parse();
+        if (charset == null) {
+        	return res.parse();
+        } else {
+        	return res.parse(charset);
+        }
     }
 
     public Connection.Response execute() throws IOException {
@@ -502,6 +529,14 @@ public class HttpConnection implements Connection {
         }
 
         public Document parse() throws IOException {
+            Validate.isTrue(executed, "Request must be executed (with .execute(), .get(), or .post() before parsing response");
+            Document doc = DataUtil.parseByteData(byteData, charset, url.toExternalForm(), req.parser());
+            byteData.rewind();
+            charset = doc.outputSettings().charset().name(); // update charset from meta-equiv, possibly
+            return doc;
+        }
+        
+        public Document parse(String charset) throws IOException {
             Validate.isTrue(executed, "Request must be executed (with .execute(), .get(), or .post() before parsing response");
             Document doc = DataUtil.parseByteData(byteData, charset, url.toExternalForm(), req.parser());
             byteData.rewind();

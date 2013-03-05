@@ -72,6 +72,10 @@ public class Jsoup {
     public static Connection connect(String url) {
         return HttpConnection.connect(url);
     }
+    
+    public static Connection connect(String url, String charset) {
+        return HttpConnection.connect(url, charset);
+    }
 
     /**
      Parse the contents of a file as HTML.

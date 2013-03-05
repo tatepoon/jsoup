@@ -471,6 +471,8 @@ public interface Connection {
          * @throws IOException on error
          */
         public Document parse() throws IOException;
+        
+        public Document parse(String charset) throws IOException;
 
         /**
          * Get the body of the response as a plain string.
